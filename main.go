@@ -1,6 +1,8 @@
 package main
 
 import (
+	"go-chatapp/db"
+
 	"context"
 	"log"
 	"net/http"
@@ -10,10 +12,23 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
 	router := gin.Default()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env")
+	}
+
+	DB, err := db.Connect(context.Background())
+	if err != nil {
+		log.Fatalf("DB connection failed: %v", err)
+	}
+	defer DB.Close()
 
 	srv := &http.Server{
 		Addr:    ":8080",
