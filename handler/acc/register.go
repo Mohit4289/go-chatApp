@@ -40,6 +40,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "failed to create user",
+			"err":     err,
 		})
 		return
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -27,6 +28,11 @@ type UserResponse struct {
 	ID    int64
 	Name  string
 	Email string
+}
+
+type LoginData struct {
+	Email    string
+	Password string
 }
 
 type UserList struct {
@@ -110,6 +116,20 @@ func (s *UserService) RegisterAcc(ctx context.Context, req User) (UserResponse, 
 		Name:  user.Name,
 		Email: user.Email,
 	}, signedToken, stringToken, nil
+}
+
+func (s *UserService) LoginAcc(ctx context.Context, req LoginData) (bool, error) {
+	row, err := s.queries.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return false, err
+	}
+
+	comparePass := bcrypt.CompareHashAndPassword([]byte(row.Password), []byte(req.Password))
+	if comparePass != nil {
+		return false, errors.New("Password is wrong")
+	}
+
+	return true, nil
 }
 
 func (s *UserService) GetAllUser(ctx context.Context) (UserList, error) {
