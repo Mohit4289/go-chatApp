@@ -1,9 +1,12 @@
 package main
 
 import (
-	"go-chatapp/db"
-
 	"context"
+	"go-chatapp/db"
+	"go-chatapp/handler/acc"
+	repository "go-chatapp/repository/generated"
+	"go-chatapp/routers"
+	"go-chatapp/service"
 	"log"
 	"net/http"
 	"os"
@@ -29,6 +32,12 @@ func main() {
 		log.Fatalf("DB connection failed: %v", err)
 	}
 	defer DB.Close()
+
+	queries := repository.New(DB)
+	userService := service.NewUserService(queries)
+	userHandler := acc.NewUserHandler(userService)
+
+	routers.SetupUserRoutes(router, userHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",
