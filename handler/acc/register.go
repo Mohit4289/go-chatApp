@@ -32,7 +32,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	createdUser, err := h.userService.RegisterAcc(ctx, service.User{
+	createdUser, accesstoken, refreshToken, err := h.userService.RegisterAcc(ctx, service.User{
 		Name:     userdata.Name,
 		Email:    userdata.Email,
 		Password: userdata.Password,
@@ -43,6 +43,26 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		})
 		return
 	}
+
+	ctx.SetCookie(
+		"refresh_token",
+		refreshToken,
+		60*60*24,
+		"/",
+		"",
+		false,
+		true,
+	)
+
+	ctx.SetCookie(
+		"access_token",
+		accesstoken,
+		60*60*24,
+		"/",
+		"",
+		false,
+		true,
+	)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "user created successfully",

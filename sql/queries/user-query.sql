@@ -1,14 +1,8 @@
 -- name: CreateUser :one
-INSERT INTO public."user" (
-    name,
-    email,
-    password
-)
-VALUES (
-    $1,
-    $2,
-    $3
-)
+INSERT INTO
+    public."user" (name, email, password)
+VALUES
+    ($1, $2, $3)
 RETURNING
     id,
     name,
@@ -16,7 +10,6 @@ RETURNING
     password,
     refresh_token,
     created_at;
-
 
 -- name: GetUserByID :one
 SELECT
@@ -26,9 +19,10 @@ SELECT
     password,
     refresh_token,
     created_at
-FROM public."user"
-WHERE id = $1;
-
+FROM
+    public."user"
+WHERE
+    id = $1;
 
 -- name: GetUserByEmail :one
 SELECT
@@ -38,14 +32,17 @@ SELECT
     password,
     refresh_token,
     created_at
-FROM public."user"
-WHERE email = $1;
-
+FROM
+    public."user"
+WHERE
+    email = $1;
 
 -- name: AddRefreshToken :one
 UPDATE public."user"
-SET refresh_token = $1
-WHERE email = $2
+SET
+    refresh_token = $1
+WHERE
+    email = $2
 RETURNING
     id,
     name,
