@@ -36,8 +36,9 @@ func main() {
 	queries := repository.New(DB)
 	userService := service.NewUserService(queries)
 	userHandler := acc.NewUserHandler(userService)
+	loginHandler := acc.LoginUserHandler(userService)
 
-	routers.SetupUserRoutes(router, userHandler)
+	routers.SetupUserRoutes(router, userHandler, loginHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",
