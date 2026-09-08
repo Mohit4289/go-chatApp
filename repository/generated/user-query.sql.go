@@ -13,8 +13,10 @@ import (
 
 const addRefreshToken = `-- name: AddRefreshToken :one
 UPDATE public."user"
-SET refresh_token = $1
-WHERE email = $2
+SET
+    refresh_token = $1
+WHERE
+    email = $2
 RETURNING
     id,
     name,
@@ -53,16 +55,10 @@ func (q *Queries) AddRefreshToken(ctx context.Context, arg AddRefreshTokenParams
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO public."user" (
-    name,
-    email,
-    password
-)
-VALUES (
-    $1,
-    $2,
-    $3
-)
+INSERT INTO
+    public."user" (name, email, password)
+VALUES
+    ($1, $2, $3)
 RETURNING
     id,
     name,
@@ -101,6 +97,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
+const getAllUser = `-- name: GetAllUser :one
+SELECT
+    name
+FROM
+    public."user"
+`
+
+func (q *Queries) GetAllUser(ctx context.Context) (string, error) {
+	row := q.db.QueryRow(ctx, getAllUser)
+	var name string
+	err := row.Scan(&name)
+	return name, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
     id,
@@ -109,8 +119,10 @@ SELECT
     password,
     refresh_token,
     created_at
-FROM public."user"
-WHERE email = $1
+FROM
+    public."user"
+WHERE
+    email = $1
 `
 
 type GetUserByEmailRow struct {
@@ -144,8 +156,10 @@ SELECT
     password,
     refresh_token,
     created_at
-FROM public."user"
-WHERE id = $1
+FROM
+    public."user"
+WHERE
+    id = $1
 `
 
 type GetUserByIDRow struct {

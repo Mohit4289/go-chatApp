@@ -50,3 +50,9 @@ RETURNING
     password,
     refresh_token,
     created_at;
+
+-- name: GetAllUser :one
+SELECT
+    name
+FROM
+    public."user";
