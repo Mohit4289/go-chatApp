@@ -118,18 +118,60 @@ func (s *UserService) RegisterAcc(ctx context.Context, req User) (UserResponse, 
 	}, signedToken, stringToken, nil
 }
 
-func (s *UserService) LoginAcc(ctx context.Context, req LoginData) (bool, error) {
+func (s *UserService) LoginAcc(ctx context.Context, req LoginData) (bool, string, string, error) {
 	row, err := s.queries.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return false, err
+		return false, "", "", err
 	}
 
 	comparePass := bcrypt.CompareHashAndPassword([]byte(row.Password), []byte(req.Password))
 	if comparePass != nil {
-		return false, errors.New("Password is wrong")
+		return false, "", "", errors.New("Password is wrong")
 	}
 
-	return true, nil
+	secretToken := config.EnvConfig().JWT_SECRET
+
+	claim := jwt.MapClaims{
+		"user_id": row.ID,
+		"email":   row.Email,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"iat":     time.Now().Unix(),
+	}
+
+	token := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		claim,
+	)
+
+	signedToken, err := token.SignedString([]byte(secretToken))
+	if err != nil {
+		return false, "", "", err
+	}
+
+	generateToken := make([]byte, 32)
+	if _, err := rand.Read(generateToken); err != nil {
+		return false, "", "", errors.New("Not able to read generated token")
+	}
+
+	stringToken := base64.RawURLEncoding.EncodeToString(generateToken)
+	hash := sha256.Sum256([]byte(stringToken))
+	tokenHash := hex.EncodeToString(hash[:])
+
+	_, err = s.queries.AddRefreshToken(
+		ctx,
+		repository.AddRefreshTokenParams{
+			RefreshToken: pgtype.Text{
+				String: tokenHash,
+				Valid:  true,
+			},
+			Email: row.Email,
+		},
+	)
+	if err != nil {
+		return false, "", "", err
+	}
+
+	return true, signedToken, stringToken, nil
 }
 
 func (s *UserService) GetAllUser(ctx context.Context) (UserList, error) {

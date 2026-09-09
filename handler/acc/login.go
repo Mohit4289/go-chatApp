@@ -30,7 +30,7 @@ func (s *LoginHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	checkingData, err := s.userService.LoginAcc(ctx, service.LoginData{
+	checkingData, accessToken, refreshToken, err := s.userService.LoginAcc(ctx, service.LoginData{
 		Email:    userData.Email,
 		Password: userData.Password,
 	})
@@ -41,6 +41,25 @@ func (s *LoginHandler) Login(ctx *gin.Context) {
 		})
 		return
 	}
+
+	ctx.SetCookie(
+		"accessToken",
+		accessToken,
+		60*60*24,
+		"/",
+		"",
+		false,
+		true,
+	)
+	ctx.SetCookie(
+		"refreshToken",
+		refreshToken,
+		60*60*24,
+		"/",
+		"",
+		false,
+		true,
+	)
 
 	ctx.JSON(http.StatusAccepted, gin.H{
 		"message": "Logined successfull",
