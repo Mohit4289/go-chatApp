@@ -1,6 +1,7 @@
 package acc
 
 import (
+	"errors"
 	"go-chatapp/service"
 	"net/http"
 
@@ -35,15 +36,23 @@ func (s *LoginHandler) Login(ctx *gin.Context) {
 		Password: userData.Password,
 	})
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredentials) || errors.Is(err, service.ErrUserNotFound) {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"message": "failed to verify user",
+				"err":     err.Error(),
+			})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"message": "failed to verfiy user",
-			"err":     err,
+			"message": "failed to verify user",
+			"err":     err.Error(),
 		})
 		return
 	}
 
 	ctx.SetCookie(
-		"accessToken",
+		"access_token",
 		accessToken,
 		60*60*24,
 		"/",
@@ -52,7 +61,7 @@ func (s *LoginHandler) Login(ctx *gin.Context) {
 		true,
 	)
 	ctx.SetCookie(
-		"refreshToken",
+		"refresh_token",
 		refreshToken,
 		60*60*24,
 		"/",

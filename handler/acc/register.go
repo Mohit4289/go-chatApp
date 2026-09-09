@@ -1,6 +1,7 @@
 package acc
 
 import (
+	"errors"
 	"net/http"
 
 	"go-chatapp/service"
@@ -38,9 +39,17 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		Password: userdata.Password,
 	})
 	if err != nil {
+		if errors.Is(err, service.ErrUserAlreadyExists) {
+			ctx.JSON(http.StatusConflict, gin.H{
+				"message": "failed to create user",
+				"err":     err.Error(),
+			})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "failed to create user",
-			"err":     err,
+			"err":     err.Error(),
 		})
 		return
 	}

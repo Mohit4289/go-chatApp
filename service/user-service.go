@@ -18,6 +18,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrInvalidCredentials = errors.New("password is wrong")
+	ErrUserNotFound       = errors.New("user not found")
+)
+
 type User struct {
 	Name     string
 	Email    string
@@ -52,7 +58,7 @@ func (s *UserService) RegisterAcc(ctx context.Context, req User) (UserResponse, 
 	_, err := s.queries.GetUserByEmail(ctx, req.Email)
 
 	if err == nil {
-		return UserResponse{}, "", "", errors.New("user already exists")
+		return UserResponse{}, "", "", ErrUserAlreadyExists
 	}
 
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -121,12 +127,15 @@ func (s *UserService) RegisterAcc(ctx context.Context, req User) (UserResponse, 
 func (s *UserService) LoginAcc(ctx context.Context, req LoginData) (bool, string, string, error) {
 	row, err := s.queries.GetUserByEmail(ctx, req.Email)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, "", "", ErrUserNotFound
+		}
 		return false, "", "", err
 	}
 
 	comparePass := bcrypt.CompareHashAndPassword([]byte(row.Password), []byte(req.Password))
 	if comparePass != nil {
-		return false, "", "", errors.New("Password is wrong")
+		return false, "", "", ErrInvalidCredentials
 	}
 
 	secretToken := config.EnvConfig().JWT_SECRET
