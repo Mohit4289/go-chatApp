@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-chatapp/db"
 	"go-chatapp/handler/acc"
+	"go-chatapp/handler/contact"
 	repository "go-chatapp/repository/generated"
 	"go-chatapp/routers"
 	"go-chatapp/service"
@@ -35,10 +36,13 @@ func main() {
 
 	queries := repository.New(DB)
 	userService := service.NewUserService(queries)
-	userHandler := acc.NewUserHandler(userService)
+	userHandler := acc.RegisterUserHandler(userService)
 	loginHandler := acc.LoginUserHandler(userService)
-
 	routers.SetupUserRoutes(router, userHandler, loginHandler)
+
+	contactService := service.NewContactService(queries)
+	listUserHandler := contact.ContactUserListHandler(contactService)
+	routers.SetupContactRoutes(router, listUserHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

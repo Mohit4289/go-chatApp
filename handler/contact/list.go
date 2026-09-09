@@ -8,11 +8,11 @@ import (
 )
 
 type ContactListHandler struct {
-	contactService *service.UserService
+	contactService *service.ContactService
 }
 
-func ContactUserListHandler(userService *service.UserService) *ContactListHandler {
-	return &ContactListHandler{contactService: userService}
+func ContactUserListHandler(contactService *service.ContactService) *ContactListHandler {
+	return &ContactListHandler{contactService: contactService}
 }
 
 func (h *ContactListHandler) UserList(ctx *gin.Context) {

@@ -182,14 +182,3 @@ func (s *UserService) LoginAcc(ctx context.Context, req LoginData) (bool, string
 
 	return true, signedToken, stringToken, nil
 }
-
-func (s *UserService) GetAllUser(ctx context.Context) (UserList, error) {
-	row, err := s.queries.GetAllUser(ctx)
-	if err != nil {
-		return UserList{}, err
-	}
-
-	return UserList{
-		Name: row,
-	}, nil
-}
