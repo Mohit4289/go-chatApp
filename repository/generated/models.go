@@ -8,6 +8,33 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Conversation struct {
+	ID        int64
+	Type      string
+	Title     pgtype.Text
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+type ConversationParticipant struct {
+	ID             int64
+	ConversationID int64
+	UserID         int64
+	Role           string
+	JoinedAt       pgtype.Timestamptz
+	LastReadAt     pgtype.Timestamptz
+}
+
+type Message struct {
+	ID             int64
+	ConversationID int64
+	SenderID       int64
+	Content        string
+	MessageType    string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
 type User struct {
 	ID           int64
 	CreatedAt    pgtype.Timestamptz
