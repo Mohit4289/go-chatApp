@@ -54,3 +54,9 @@ SELECT EXISTS (
     SELECT 1 FROM public.conversation_participants
     WHERE conversation_id = $1 AND user_id = $2
 );
+
+-- name: GetConversationParticipants :many
+
+SELECT user_id
+FROM public.conversation_participants
+WHERE conversation_id = $1;

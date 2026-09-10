@@ -4,10 +4,12 @@ import (
 	"context"
 	"go-chatapp/db"
 	"go-chatapp/handler/acc"
+	"go-chatapp/handler/chat"
 	"go-chatapp/handler/contact"
 	repository "go-chatapp/repository/generated"
 	"go-chatapp/routers"
 	"go-chatapp/service"
+	"go-chatapp/websocket"
 	"log"
 	"net/http"
 	"os"
@@ -43,6 +45,13 @@ func main() {
 	contactService := service.NewContactService(queries)
 	listUserHandler := contact.ContactUserListHandler(contactService)
 	routers.SetupContactRoutes(router, listUserHandler)
+
+	manager := websocket.NewManager()
+	websocketHandler := chat.NewWebSocketHandler(manager)
+	routers.SetupWebSocketRoutes(
+		router,
+		websocketHandler,
+	)
 
 	srv := &http.Server{
 		Addr:    ":8080",

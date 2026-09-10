@@ -102,6 +102,33 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (C
 	return i, err
 }
 
+const getConversationParticipants = `-- name: GetConversationParticipants :many
+
+SELECT user_id
+FROM public.conversation_participants
+WHERE conversation_id = $1
+`
+
+func (q *Queries) GetConversationParticipants(ctx context.Context, conversationID int64) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getConversationParticipants, conversationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var user_id int64
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMessagesByConversation = `-- name: GetMessagesByConversation :many
 SELECT 
     m.id,
